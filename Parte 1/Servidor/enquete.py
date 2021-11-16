@@ -35,11 +35,10 @@ class enquete:
             elif voto == 2:
                 self.votosOpcao2.append(nome)
             
-            return "Voto registrado"
+            return True
 
         else:
-            print("Este usuário já votou")
-            return "Cancelar voto" 
+            return False 
 
     def consultaResultado(self):
         contagemOpcao1 = len(self.votosOpcao1)

@@ -27,7 +27,7 @@ class multicast():
 
             if verificarMensagemRecebida == "1":                
                 tituloEnquete = mensagemDecodificada [24:]
-                self.cliente.votarEmEnquete(self.servidor, self.uri_cliente, tituloEnquete)
+                self.cliente.mostrarConteudo("Por gentileza vote na enquete: " + tituloEnquete)
 
             else:
                 tituloEnquete = mensagemDecodificada [23:]

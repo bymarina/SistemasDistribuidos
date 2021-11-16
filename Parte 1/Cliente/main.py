@@ -22,6 +22,7 @@ def main():
 
     #Instanciando a Assinatura Digital
     assinatura = assinaturaDigital()
+    cliente.referenciaAssinaturaDigital(assinatura)
 
     #Instanciando o Multicast
 
@@ -38,26 +39,12 @@ def main():
     thread_multicast.start()
 
     #O cliente deve ser cadastrado ao iniciar a aplicação
-    cliente.cadastrarUsuario(servidor, uri_cliente, assinatura)
+    cliente.cadastrarUsuario(servidor, uri_cliente)
 
     while True:
-        print("Bem-vindo(a) ao serviço de enquetes, as seguintes opções estão disponíveis: ")
-        print("1 - Cadastrar nova enquete")
-        print("2 - Consultar enquetes disponíveis")
-        print("3 - Votar em uma enquete")
-        print("4 - Sair")
 
-        selection = input ("Por favor selecione uma opção: ") 
-        if selection =='1': 
-            cliente.cadastrarEnquete(servidor, uri_cliente)
-        elif selection == '2': 
-            cliente.consultarEnquetes(servidor)
-        elif selection == '3':
-            cliente.votarEmEnquete(servidor, uri_cliente)
-        elif selection =='4':
-            break
-        else: 
-            print ("Opção desconhecida!") 
+    #Solicita o menu do servidor
+        print(servidor.menu(uri_cliente))
 
 if __name__ == "__main__":
     main()
