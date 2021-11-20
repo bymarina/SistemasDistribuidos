@@ -157,10 +157,8 @@ class servidor(object):
     def verificaAssinatura(self, nome, mensagem, assinatura, cliente):
         usuario = self.selecionaObjetoUsuario(nome)
         chave_publica = usuario.retorna_chave_publica()
-        chave_publica_decodificada = base64.b64decode(chave_publica)
-        chave_publica_rsa = RSA.importKey(chave_publica_decodificada) 
+        chave_publica_rsa = RSA.importKey(chave_publica) 
         assinante_chave_publica = pkcs1_15.new(chave_publica_rsa)
-        assinatura_decodificada = base64.b64decode(assinatura)
         if usuario == False:
             cliente.mostrarConteudo("Erro na localização do usuário")
         else:
@@ -168,6 +166,7 @@ class servidor(object):
             digest = SHA256.new()
             digest.update(mensagemBytes)
             try:
+                assinatura_decodificada = base64.b64decode(assinatura["data"])
                 assinante_chave_publica.verify(digest, assinatura_decodificada)
                 return True
             except (ValueError, TypeError):

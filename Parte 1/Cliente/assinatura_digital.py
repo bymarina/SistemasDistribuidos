@@ -15,8 +15,6 @@ class assinaturaDigital (object):
         chave_privada = par_de_chaves
         self.assinante = pkcs1_15.new(chave_privada)
         
-        #Preparando para enviar a chave pública para o servidor
-        #chave_publica_bytes = b64encode(self.chave_publica)
         self.chave_publica_str = self.chave_publica.decode()
     
     def chavePublicaBytes(self):
@@ -34,5 +32,4 @@ class assinaturaDigital (object):
         digest = SHA256.new()
         digest.update(mensagemBytes)
         AssinaturaDigital = self.assinante.sign(digest)
-        AssinaturaDigitalCodificada = base64.b64encode(AssinaturaDigital)
-        return AssinaturaDigitalCodificada    
+        return AssinaturaDigital    

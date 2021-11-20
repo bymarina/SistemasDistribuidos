@@ -35,8 +35,8 @@ class enquete:
             self.votosOpcao2.append(nome)
 
     def consultaResultado(self):
-        contagemOpcao1 = len(self.votosOpcao1)
-        contagemOpcao2 = len(self.votosOpcao2)
+        contagemOpcao1 = str(len(self.votosOpcao1))
+        contagemOpcao2 = str(len(self.votosOpcao2))
 
         if contagemOpcao1 > contagemOpcao2:
             frase = ("Opção 1 com mais votos. " + "Data: " + self.data1 + ", Horario: "+ self.horario1 +" no local: " + self.local + "\nTotal de votos na opção 1: " + contagemOpcao1 + "\nTotal de votos na opção 2: " + contagemOpcao2)
