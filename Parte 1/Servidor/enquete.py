@@ -20,35 +20,29 @@ class enquete:
     def checagemUsuario(self, nome):
         usuarioPresente = False
         for x in self.votosOpcao1:
-            if x.nome == nome:
+            if x == nome:
                 usuarioPresente = True
         for y in self.votosOpcao2:
-            if y.nome == nome:
+            if y == nome:
                 usuarioPresente = True
 
         return usuarioPresente
 
-    def votar(self, nome, voto):
-        if self.checagemUsuario(nome) == False:            
-            if voto == 1:
-                self.votosOpcao1.append(nome)
-            elif voto == 2:
-                self.votosOpcao2.append(nome)
-            
-            return True
-
-        else:
-            return False 
+    def votar(self, nome, voto):            
+        if voto == '1':
+            self.votosOpcao1.append(nome)
+        elif voto == '2':
+            self.votosOpcao2.append(nome)
 
     def consultaResultado(self):
         contagemOpcao1 = len(self.votosOpcao1)
         contagemOpcao2 = len(self.votosOpcao2)
 
         if contagemOpcao1 > contagemOpcao2:
-            frase = ("Opção 1 com mais votos. " + "Data/Horário: " + self.data1 + " no local: " + self.local + "Total de votos na opção 1: " + contagemOpcao1 + ", total de votos na opção 2: " + contagemOpcao2)
+            frase = ("Opção 1 com mais votos. " + "Data: " + self.data1 + ", Horario: "+ self.horario1 +" no local: " + self.local + "\nTotal de votos na opção 1: " + contagemOpcao1 + "\nTotal de votos na opção 2: " + contagemOpcao2)
             return frase
         elif contagemOpcao1 < contagemOpcao2:
-            frase = ("Opção 2 com mais votos. " + "Data/Horário: " + self.data2 + " no local: " + self.local + "Total de votos na opção 1: " + contagemOpcao1 + ", total de votos na opção 2: " + contagemOpcao2)
+            frase = ("Opção 2 com mais votos. " + "Data: " + self.data2 + ", Horario: "+ self.horario2 +" no local: " + self.local + "\nTotal de votos na opção 1: " + contagemOpcao1 + "\nTotal de votos na opção 2: " + contagemOpcao2)
             return frase
         elif (contagemOpcao1 ==0) and (contagemOpcao2 == 0):
             frase = ("Nenhum voto registrado.")

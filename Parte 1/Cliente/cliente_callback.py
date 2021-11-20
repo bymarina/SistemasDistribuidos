@@ -13,8 +13,7 @@ class cliente_callback(object):
         self.chave_publica = assinatura.chavePublicaString()
         self.objetoAssinaturaDigital = assinatura
         self.mensagem = "Desejo consultar esta enquete"
-        mensagemEmFormatoHash = assinatura.hashMensagem(self.mensagem)
-        self.assinaturaDigital = assinatura.assinarMensagem(mensagemEmFormatoHash)
+        self.assinaturaDigital = assinatura.assinarMensagem(self.mensagem)
 
     def mostrarConteudo(self, conteudo):
         print(conteudo)
@@ -33,5 +32,3 @@ class cliente_callback(object):
     def cadastrarUsuario(self, servidor, uri_cliente):
         servidor.cadastroUsuario(uri_cliente)
         self.servidor = servidor
-
-         

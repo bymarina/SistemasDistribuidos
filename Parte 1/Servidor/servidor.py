@@ -1,7 +1,10 @@
 from __future__ import print_function
-from Crypto.Hash import SHA256
+import base64
 import Pyro4
 from _thread import *
+from Crypto.Signature import pkcs1_15
+from Crypto.PublicKey import RSA  
+from Crypto.Hash import SHA256
 
 from usuario import usuario
 from multicast import multicast
@@ -106,14 +109,9 @@ class servidor(object):
         print("Nova enquete registrada: " + nova_enquete.titulo)
         self.multicasting.notificarNovaEnquete(nova_enquete)
 
-    def informativoParaVotacao(self, titulo):
-        enquete = self.selecionaObjetoEnquete(titulo)
-        if enquete == False:
-            return ("Enquete não encontrada")
-        else:
-            return ("Opção 1: " + enquete.data1 + " , " + "Opção 2: " + enquete.data2)
+    def informativoParaVotacao(self, enquete):        
+        return (" Enquete: " + enquete.titulo + "\n Local: " + enquete.local +"\n Data 1: " + enquete.data1 + ", Horário: " + enquete.horario1 + "\n Data 2: " + enquete.data2 + ", Horário: " + enquete.horario2)
 
-    
     def votar(self, uri_cliente):        
         cliente = self.selecionaReferenciaRemotaCliente(uri_cliente)
 
@@ -127,15 +125,17 @@ class servidor(object):
             if selecionarEnquete == False:
                 cliente.mostrarConteudo("Enquete não encontrada")
             else:
-                voto = cliente.solicitarDados("Digite 1 para selecionar a opção 1 ou 2 para selecionar a opção 2: ")
-                if voto != '1' and voto != '2':
-                    cliente.mostrarConteudo("Opção inválida")
-                else: 
-                    resultadoVoto = selecionarEnquete.votar(nome, voto)
-                    if resultadoVoto == True:
+                if selecionarEnquete.checagemUsuario(nome) == True:
+                    cliente.mostrarConteudo("Este usuário já votou nesta enquete")
+                else:
+                    informacoes = self.informativoParaVotacao(selecionarEnquete)
+                    cliente.mostrarConteudo(informacoes)
+                    voto = cliente.solicitarDados("Digite 1 para selecionar a data/horario 1 ou 2 para selecionar a data/horario 2: ")
+                    if voto != '1' and voto != '2':
+                        cliente.mostrarConteudo("Opção inválida")
+                    else: 
+                        selecionarEnquete.votar(nome, voto)
                         cliente.mostrarConteudo("Voto registrado")
-                    else:
-                        cliente.mostrarConteudo("Este usuário já votou nesta enquete")
 
     def consulta(self, uri_cliente):
         cliente = self.selecionaReferenciaRemotaCliente(uri_cliente)
@@ -157,14 +157,21 @@ class servidor(object):
     def verificaAssinatura(self, nome, mensagem, assinatura, cliente):
         usuario = self.selecionaObjetoUsuario(nome)
         chave_publica = usuario.retorna_chave_publica()
-
+        chave_publica_decodificada = base64.b64decode(chave_publica)
+        chave_publica_rsa = RSA.importKey(chave_publica_decodificada) 
+        assinante_chave_publica = pkcs1_15.new(chave_publica_rsa)
+        assinatura_decodificada = base64.b64decode(assinatura)
         if usuario == False:
             cliente.mostrarConteudo("Erro na localização do usuário")
         else:
-            mensagemHash = SHA256.new(mensagem.encode('utf-8')).digest()
-            if(chave_publica.verify(mensagemHash, assinatura)):
+            mensagemBytes = bytes(mensagem, 'utf-8')
+            digest = SHA256.new()
+            digest.update(mensagemBytes)
+            try:
+                assinante_chave_publica.verify(digest, assinatura_decodificada)
                 return True
-            else:
+            except (ValueError, TypeError):
+                print("Assinatura inválida")
                 return False
 
     def finalizarEnquete(self, titulo):
