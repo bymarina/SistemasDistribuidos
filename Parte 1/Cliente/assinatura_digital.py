@@ -13,8 +13,11 @@ class assinaturaDigital (object):
         par_de_chaves = RSA.generate(2048, semente_randomica)
         self.chave_publica = par_de_chaves.public_key().export_key() #export key deixa a chave em bytes
         chave_privada = par_de_chaves
+
+        #Criando o assinante
         self.assinante = pkcs1_15.new(chave_privada)
         
+        #Modificando chave de bytes para string
         self.chave_publica_str = self.chave_publica.decode()
     
     def chavePublicaBytes(self):
@@ -22,14 +25,12 @@ class assinaturaDigital (object):
 
     def chavePublicaString(self):
         return self.chave_publica_str
-    
-    def chavePublica(self):
-        chavePublicaCodificada = base64.b64encode(self.chave_publica)
-        return chavePublicaCodificada
 
     def assinarMensagem(self, mensagem):
+        #Criando o hash da mensagem:
         mensagemBytes = bytes(mensagem, 'utf-8')
         digest = SHA256.new()
         digest.update(mensagemBytes)
+        #Assinando a mensagem
         AssinaturaDigital = self.assinante.sign(digest)
         return AssinaturaDigital    

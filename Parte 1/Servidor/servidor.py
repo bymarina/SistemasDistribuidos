@@ -68,7 +68,7 @@ class servidor(object):
     @Pyro4.expose    
     def menu(self, uri_cliente):     
         cliente = self.selecionaReferenciaRemotaCliente(uri_cliente)   
-        menu =  ("Bem vindo(a) ao serviço de enquetes, as seguintes opções estão disponíveis: " + "\n 1: Cadastrar nova enquete" + "\n 2: Consultar enquete" + "\n 3: Votar em enquete")
+        menu =  ("\nBem vindo(a) ao serviço de enquetes, as seguintes opções estão disponíveis: " + "\n 1: Cadastrar nova enquete" + "\n 2: Consultar enquete" + "\n 3: Votar em enquete")
         cliente.mostrarConteudo(menu)
         selecao = cliente.solicitarDados("Selecionar: ")
         opcaoSelecionada = self.opcao(selecao, uri_cliente)
@@ -125,17 +125,21 @@ class servidor(object):
             if selecionarEnquete == False:
                 cliente.mostrarConteudo("Enquete não encontrada")
             else:
-                if selecionarEnquete.checagemUsuario(nome) == True:
-                    cliente.mostrarConteudo("Este usuário já votou nesta enquete")
+                if selecionarEnquete.checagemEnqueteAtiva:
+                    if selecionarEnquete.checagemUsuario(nome) == True:
+                        cliente.mostrarConteudo("Este usuário já votou nesta enquete")
+                    else:
+                        informacoes = self.informativoParaVotacao(selecionarEnquete)
+                        cliente.mostrarConteudo(informacoes)
+                        voto = cliente.solicitarDados("Digite 1 para selecionar a data/horario 1 ou 2 para selecionar a data/horario 2: ")
+                        if voto != '1' and voto != '2':
+                            cliente.mostrarConteudo("Opção inválida")
+                        else: 
+                            selecionarEnquete.votar(nome, voto)
+                            cliente.mostrarConteudo("Voto registrado")
+                            self.tenteFinalizarEnquete(nomeEnquete)
                 else:
-                    informacoes = self.informativoParaVotacao(selecionarEnquete)
-                    cliente.mostrarConteudo(informacoes)
-                    voto = cliente.solicitarDados("Digite 1 para selecionar a data/horario 1 ou 2 para selecionar a data/horario 2: ")
-                    if voto != '1' and voto != '2':
-                        cliente.mostrarConteudo("Opção inválida")
-                    else: 
-                        selecionarEnquete.votar(nome, voto)
-                        cliente.mostrarConteudo("Voto registrado")
+                    cliente.mostrarConteudo("Esta enquete já foi finalizada")
 
     def consulta(self, uri_cliente):
         cliente = self.selecionaReferenciaRemotaCliente(uri_cliente)
@@ -173,9 +177,31 @@ class servidor(object):
                 print("Assinatura inválida")
                 return False
 
-    def finalizarEnquete(self, titulo):
-        enquete = self.selecionaObjetoEnquete(titulo) 
-        if enquete != False:
-            enquete.finalizarEnquete(titulo)
-        else:
-            print("Falha na finalização da enquete: " + titulo)
+    def tenteFinalizarEnquete(self, titulo):
+        enquete = self.selecionaObjetoEnquete(titulo)
+        if enquete == False:
+            print("Enquete não localizada")
+            return
+
+        if self.todosUsuariosVotaram(enquete):
+            self.finalizaEnquete(enquete)
+            return
+        print("Ainda restam usuários para votar")
+
+    def finalizaEnquete(self, enquete):
+        enquete.finalizarEnquetePorVotantes()
+        self.multicasting.notificarEnqueteFinalizada(enquete)
+        enquete.consultaResultado()
+
+    def todosUsuariosVotaram(self, enquete):
+        for usuario in self.usuarios:
+            print("Verificando votantes")
+            self.checaVotoUsuario(usuario)
+        return True
+    
+    def checaVotoUsuario(self, usuario):
+        usuarioVotou = enquete.checagemUsuario(usuario.nome)
+        if usuarioVotou == False:
+            print("Usuario não votou: " + usuario.nome)
+            return False
+        print("Usuário já votou: " + usuario.nome)

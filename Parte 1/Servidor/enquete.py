@@ -16,6 +16,8 @@ class enquete:
         self.votosOpcao1 = []
         self.votosOpcao2 = []
 
+    def checagemEnqueteAtiva(self):
+        return self.enqueteAtiva
 
     def checagemUsuario(self, nome):
         usuarioPresente = False
@@ -37,9 +39,10 @@ class enquete:
     def consultaResultado(self):
         contagemOpcao1 = str(len(self.votosOpcao1))
         contagemOpcao2 = str(len(self.votosOpcao2))
+        usuariosJaVotaram = str(self.votosOpcao1 + self.votosOpcao2)
 
         if contagemOpcao1 > contagemOpcao2:
-            frase = ("Opção 1 com mais votos. " + "Data: " + self.data1 + ", Horario: "+ self.horario1 +" no local: " + self.local + "\nTotal de votos na opção 1: " + contagemOpcao1 + "\nTotal de votos na opção 2: " + contagemOpcao2)
+            frase = ("Opção 1 com mais votos. " + "Data: " + self.data1 + ", Horario: "+ self.horario1 +" no local: " + self.local + "\nTotal de votos na opção 1: " + contagemOpcao1 + "\nTotal de votos na opção 2: " + contagemOpcao2 + "\nParticipantes que já votaram: " + usuariosJaVotaram)
             return frase
         elif contagemOpcao1 < contagemOpcao2:
             frase = ("Opção 2 com mais votos. " + "Data: " + self.data2 + ", Horario: "+ self.horario2 +" no local: " + self.local + "\nTotal de votos na opção 1: " + contagemOpcao1 + "\nTotal de votos na opção 2: " + contagemOpcao2)
@@ -51,14 +54,9 @@ class enquete:
             frase = ("Empate!" + "Total de votos na opção 1: " + contagemOpcao1 + ", total de votos na opção 2: " + contagemOpcao2)
             return frase
 
-    def finalizarEnquete(self, nome):
-        if self.nome == nome:
-            self.enqueteAtiva = False
-            multicast.notificarEnqueteFinalizada(self)
-            return ("Enquete: " + self.titulo + " " + "finalizada!")
-
-        else:
-            return ("Somente o criador da enquete pode finalizá-la")
+    def finalizarEnquetePorVotantes(self):
+        self.enqueteAtiva = False
+        print("Enquete finalizada: " + self.titulo)
 
     def dadosEnquete(self):
         return self

@@ -17,5 +17,5 @@ class multicast:
         self.sock.sendto(MESSAGE, (self.MCAST_GRP, self.MCAST_PORT))
 
     def notificarEnqueteFinalizada(self, enquete):
-        MESSAGE = str.encode("2: Enquete finalizada: " + enquete.titulo + " " + " resultado:" + enquete.consultaResultado)
+        MESSAGE = str.encode("2: Enquete finalizada: " + enquete.titulo)
         self.sock.sendto(MESSAGE, (self.MCAST_GRP, self.MCAST_PORT)) 
