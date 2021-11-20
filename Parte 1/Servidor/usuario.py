@@ -6,8 +6,8 @@ class usuario:
         self.uri_cliente = uri_cliente
         self.chave_publica_string = chave_publica
 
-    def nome(self):
-        return self.nome
+    #def nome(self):
+    #    return self.nome
     
     def uri_cliente(self):
         return self.uri_cliente 

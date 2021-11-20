@@ -194,14 +194,14 @@ class servidor(object):
         enquete.consultaResultado()
 
     def todosUsuariosVotaram(self, enquete):
-        for usuario in self.usuarios:
+        for pessoa in self.usuarios:
             print("Verificando votantes")
-            self.checaVotoUsuario(usuario)
+            self.checaVotoUsuario(enquete, pessoa)
         return True
     
-    def checaVotoUsuario(self, usuario):
-        usuarioVotou = enquete.checagemUsuario(usuario.nome)
+    def checaVotoUsuario(self, enquete, pessoa):
+        usuarioVotou = enquete.checagemUsuario(pessoa.nome)
         if usuarioVotou == False:
-            print("Usuario não votou: " + usuario.nome)
+            print("Usuario não votou: " + pessoa.nome)
             return False
-        print("Usuário já votou: " + usuario.nome)
+        print("Usuário já votou: " + pessoa.nome)
