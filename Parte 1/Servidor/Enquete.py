@@ -16,14 +16,6 @@ class Enquete:
         self.enqueteAtiva = True
         self.votosOpcao1 = []
         self.votosOpcao2 = []
-        self.validade = Enquete.calcular_validade_enquete(self.limite)
-
-    @staticmethod
-    def calcular_validade_enquete(limite):
-        data_de_hoje = date.today()
-        limite_int = int(limite)
-        validade_enquete = data_de_hoje + timedelta(days=limite_int)
-        return validade_enquete
 
     def checar_status_enquete(self):
         return self.enqueteAtiva
@@ -48,18 +40,18 @@ class Enquete:
 
         if contagem_opcao1 > contagem_opcao2:
             frase = (
-                        "Opção 1 com mais votos. " + "Data: " + self.data1 + ", Horário: " + self.horario1 + " no local: " + self.local + "\nTotal de votos na opção 1: " + contagem_opcao1 + "\nTotal de votos na opção 2: " + contagem_opcao2 + "\nParticipantes que votaram: " + usuarios_ja_votaram)
+                        "\nOpção 1 com mais votos. " + "Data: " + self.data1 + ", Horário: " + self.horario1 + " no local: " + self.local + "\nTotal de votos na opção 1: " + contagem_opcao1 + "\nTotal de votos na opção 2: " + contagem_opcao2 + "\nParticipantes que votaram: " + usuarios_ja_votaram)
             return frase
         elif contagem_opcao1 < contagem_opcao2:
             frase = (
-                        "Opção 2 com mais votos. " + "Data: " + self.data2 + ", Horário: " + self.horario2 + " no local: " + self.local + "\nTotal de votos na opção 1: " + contagem_opcao1 + "\nTotal de votos na opção 2: " + contagem_opcao2 + "\nParticipantes que votaram: " + usuarios_ja_votaram)
+                        "\nOpção 2 com mais votos. " + "Data: " + self.data2 + ", Horário: " + self.horario2 + " no local: " + self.local + "\nTotal de votos na opção 1: " + contagem_opcao1 + "\nTotal de votos na opção 2: " + contagem_opcao2 + "\nParticipantes que votaram: " + usuarios_ja_votaram)
             return frase
         elif (contagem_opcao1 == 0) and (contagem_opcao2 == 0):
-            frase = "Nenhum voto registrado."
+            frase = "\nNenhum voto registrado."
             return frase
         else:
             frase = (
-                        "Empate!" + "Total de votos na opção 1: " + contagem_opcao1 + ", total de votos na opção 2: " + contagem_opcao2 + contagem_opcao2 + "\nParticipantes que votaram: " + usuarios_ja_votaram)
+                        "\nEmpate!" + "Total de votos na opção 1: " + contagem_opcao1 + ", total de votos na opção 2: " + contagem_opcao2 + contagem_opcao2 + "\nParticipantes que votaram: " + usuarios_ja_votaram)
             return frase
 
     def consultar_resultado(self):
@@ -67,18 +59,18 @@ class Enquete:
         contagem_opcao2 = str(len(self.votosOpcao2))
 
         if contagem_opcao1 > contagem_opcao2:
-            frase = ("A opção 1 foi escolhida pela maioria dos votantes. Local: " + self.local + " Data: " + self.data1 + " Horário: " + self.horario1)
+            frase = ("A opção 1 foi escolhida pela maioria dos votantes. Local: " + self.local + ". Data: " + self.data1 + ". Horário: " + self.horario1)
         elif contagem_opcao2 > contagem_opcao1:
-            frase = ("A opção 2 foi escolhida pela maioria dos votantes. Local: " + self.local + " Data: " + self.data2 + " Horário: " + self.horario2)
+            frase = ("A opção 2 foi escolhida pela maioria dos votantes. Local: " + self.local + ". Data: " + self.data2 + ". Horário: " + self.horario2)
+        elif contagem_opcao2 == '0' and contagem_opcao2 == '0':
+            frase = "Nenhum usuário votou nesta enquete"
         elif contagem_opcao1 == contagem_opcao2:
             frase = "A votação resultou em empate."
-        elif contagem_opcao2 == 0 and contagem_opcao2 == 0:
-            frase = "Nenhum usuário votou nesta enquete"
         else:
             frase = "Os resultados ainda são inconclusivos"
         return frase
 
-    def finalizar_enquete_por_votos(self):
+    def finalizar_enquete(self):
         self.enqueteAtiva = False
         print("Enquete finalizada: " + self.titulo)
 

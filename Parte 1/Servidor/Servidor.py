@@ -20,9 +20,6 @@ class Servidor(object):
 
         self.multicasting = multicast()
 
-    def retornar_objeto_multicast(self):
-        return self.multicasting
-
     def selecionar_objeto_enquete(self, titulo):
         enquete_encontrada = False
         objeto_enquete = None
@@ -107,12 +104,12 @@ class Servidor(object):
         horario1 = cliente.solicitar_dados("Horário: ")
         data2 = cliente.solicitar_dados("Data opção 2: ")
         horario2 = cliente.solicitar_dados("Horário: ")
-        limite = cliente.solicitar_dados("Tempo de duração da enquete (em dias): ")
+        limite = cliente.solicitar_dados("Data limite da enquete (formato: AAAA-MM-DD): ")
         nova_enquete = Enquete(dono_da_enquete, titulo, local, data1, horario1, data2, horario2, limite, uri_cliente)
         self.enquetes.append(nova_enquete.pegar_dados_enquete())
         print("Nova enquete registrada: " + nova_enquete.titulo)
         self.multicasting.notificar_nova_enquete(nova_enquete)
-        Servidor.iniciar_thread_acompanhamento_validade_enquete(nova_enquete)
+        self.iniciar_thread_acompanhamento_validade_enquete(nova_enquete)
 
     @staticmethod
     def solicitar_informativo_para_votacao(objeto_enquete):
@@ -151,7 +148,7 @@ class Servidor(object):
 
         objeto_enquete.votar(nome, voto)
         cliente.mostrar_conteudo_para_cliente("\nVoto registrado")
-        GerenciadorDeEnquetes.tente_finalizar_enquete(objeto_enquete, self.retornar_objeto_multicast(), self.usuarios_cadastrados)
+        GerenciadorDeEnquetes.tente_finalizar_enquete(objeto_enquete, self.multicasting, self.usuarios_cadastrados)
 
     def consultar_enquete(self, uri_cliente):
         cliente = self.selecionar_referencia_remota_cliente(uri_cliente)
@@ -177,9 +174,8 @@ class Servidor(object):
         resultado_consulta_enquete = objeto_enquete.consultar_andamento_enquete()
         cliente.mostrar_conteudo_para_cliente(resultado_consulta_enquete)
 
-    @staticmethod
-    def iniciar_thread_acompanhamento_validade_enquete(objeto_enquete):
-        nova_thread_acompanhamento_validade = SupervisorEnquetePorTempo(objeto_enquete)
+    def iniciar_thread_acompanhamento_validade_enquete(self, objeto_enquete):
+        nova_thread_acompanhamento_validade = SupervisorEnquetePorTempo(objeto_enquete, self.multicasting)
 
         thread_multicast = t.Thread(target=nova_thread_acompanhamento_validade.acompanhar_fechamento_enquete, args=())
         thread_multicast.daemon = True
