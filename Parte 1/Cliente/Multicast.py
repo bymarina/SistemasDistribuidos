@@ -2,7 +2,8 @@ import socket
 import struct
 import time
 
-class multicast():
+
+class Multicast:
     def __init__(self):
         MCAST_GRP = '224.1.1.1'
         MCAST_PORT = 5007
@@ -17,25 +18,28 @@ class multicast():
             self.sock.bind((MCAST_GRP, MCAST_PORT))
         mreq = struct.pack('4sl', socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-    
-    def escutarMulticast(self):
+
+    def escutar_multicast(self):
         while True:
             mensagem = self.sock.recv(10240)
-            print(mensagem)
-            mensagemDecodificada = mensagem.decode()
-            verificarMensagemRecebida = mensagemDecodificada[0]
+            if mensagem is None or mensagem == b'':
+                time.sleep(1)
+                continue
 
-            if verificarMensagemRecebida == "1":                
-                tituloEnquete = mensagemDecodificada [24:]
-                self.cliente.mostrarConteudo("Por gentileza vote na enquete: " + tituloEnquete)
+            mensagem_decodificada = mensagem.decode()
+            print("\nAtenção!")
+            verificar_mensagem_recebida = mensagem_decodificada[0]
 
+            if verificar_mensagem_recebida == "1":
+                titulo_enquete = mensagem_decodificada[24:]
+                self.cliente.mostrar_conteudo_para_cliente("Por gentileza vote na nova enquete criada: " + titulo_enquete)
             else:
-                tituloEnquete = mensagemDecodificada [23:]
-                print("Enquete finalizada: " + tituloEnquete)
+                titulo_enquete = mensagem_decodificada[23:]
+                print("Enquete finalizada: " + titulo_enquete)
 
-            time.sleep(1)            
+            time.sleep(1)
 
-    def referenciaCliente(self, servidor, cliente, uri_cliente):
+    def pegar_referencias_cliente(self, servidor, cliente, uri_cliente):
         self.cliente = cliente
         self.uri_cliente = uri_cliente
         self.servidor = servidor
