@@ -1,6 +1,3 @@
-from base64 import b64decode
-
-
 class Usuario:
     def __init__(self, nome, uri_cliente, chave_publica):
         self.nome = nome

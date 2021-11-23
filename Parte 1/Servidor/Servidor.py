@@ -6,7 +6,7 @@ from Usuario import Usuario
 from GerenciadorDeEnquetes import GerenciadorDeEnquetes
 from AssinaturaDigital import AssinaturaDigital
 from SupervisorEnquetePorTempo import SupervisorEnquetePorTempo
-from Notificar import Notificar
+from GerenciadorMensagensSubscribers import GerenciadorMensagens
 # Iniciar primeiramente o serviço de nomes: python -m Pyro4.naming
 
 
@@ -15,8 +15,10 @@ class Servidor(object):
     def __init__(self):
         self.enquetes = []
         self.usuarios_cadastrados = []
+        self.gerenciadores_de_mensagens = []
 
     def selecionar_objeto_enquete(self, titulo):
+        # Selecionando um objeto enquete a partir de seu título
         enquete_encontrada = False
         objeto_enquete = None
         for enquete_cadastrada in self.enquetes:
@@ -31,6 +33,7 @@ class Servidor(object):
             return None
 
     def verificar_cadastro_de_usuario(self, nome):
+        # Verificando se usuário já foi cadastrado
         for usuario in self.usuarios_cadastrados:
             if usuario.nome == nome:
                 return True
@@ -38,6 +41,7 @@ class Servidor(object):
             return False
 
     def selecionar_objeto_usuario(self, nome):
+        # Selecionando um objeto usuário a partir de seu nome
         usuario_localizado = False
         objeto_usuario = None
         for nomes_cadastrados in self.usuarios_cadastrados:
@@ -51,8 +55,24 @@ class Servidor(object):
         else:
             return None
 
+    def selecionar_gerenciador_de_mensagens(self, objeto_enquete):
+        # Selecionando um objeto gerenciador de mensagens a partir de sua enquete
+        gerenciador_localizado = False
+        objeto_gerenciador = None
+        for gerenciador in self.gerenciadores_de_mensagens:
+            if gerenciador.objeto_enquete == objeto_enquete:
+                gerenciador_localizado = True
+                objeto_gerenciador = gerenciador
+
+        if gerenciador_localizado:
+            return objeto_gerenciador
+
+        else:
+            return None
+
     @Pyro4.expose
     def cadastrar_usuario(self, uri_cliente, nome, chave_publica):
+        # Criação do usuário:
         novo_usuario = Usuario(nome, uri_cliente, chave_publica)
         self.usuarios_cadastrados.append(novo_usuario)
         return "Novo usuário registrado: " + novo_usuario.nome
@@ -62,17 +82,31 @@ class Servidor(object):
         if not self.verificar_cadastro_de_usuario(nome):
             return "\nUsuário não cadastrado"
 
+        # Criação da enquete:
         nova_enquete = Enquete(nome, titulo, local, data1, horario1, data2, horario2, limite)
         self.enquetes.append(nova_enquete)
 
-        notificacao = ("\nPor gentileza votar na nova enquete criada: " + titulo)
-        Notificar.notificar_clientes(notificacao, self.usuarios_cadastrados)
-        self.iniciar_thread_acompanhamento_validade_enquete(nova_enquete)
+        # O gerenciador de mensagens é onde são armazenadas as informações de subscribers de cada enquete
+        # O gerenciador de mensagens também ativa o envio de notificações do servidor para os subscribers
+        # Criando o gerenciador de mensagens:
+        gerenciador_de_mensagens = GerenciadorMensagens(nova_enquete)
+        self.gerenciadores_de_mensagens.append(gerenciador_de_mensagens)
+
+        # Adicionando o criador na enquete como subscriber:
+        criador_enquete = self.selecionar_objeto_usuario(nome)
+        gerenciador_de_mensagens.adicionar_subscriber_criador(criador_enquete)
+
+        # Notificando a criação de uma nova enquete:
+        gerenciador_de_mensagens.notificar_nova_enquete(self.usuarios_cadastrados)
+
+        # Iniciando a thread que acompanha o encerramento de uma enquete por data limite
+        self.iniciar_thread_acompanhamento_validade_enquete(nova_enquete, gerenciador_de_mensagens)
 
         return "\nEnquete registrada"
 
     @Pyro4.expose
     def solicitar_informativo_para_votacao(self, titulo):
+        # O informativo para votação é uma mensagem que mostra todas as informações que o votante precisa sobre a enquete
         objeto_enquete = self.selecionar_objeto_enquete(titulo)
         if not objeto_enquete.checar_status_enquete():
             return "\nEsta enquete já foi finalizada"
@@ -83,23 +117,36 @@ class Servidor(object):
     def votar(self, nome, titulo, voto):
         objeto_enquete = self.selecionar_objeto_enquete(titulo)
 
+        # Verificando se o usuário que deseja votar possui cadastro
         if not self.verificar_cadastro_de_usuario(nome):
             return "\nUsuário não cadastrado"
 
+        # Verificando se a enquete solicitada existe
         if objeto_enquete is None:
             return "\nEnquete não encontrada"
 
+        # Verificando se a enquete solicitada está em andamento ou se já foi encerrada
         if not objeto_enquete.checar_status_enquete():
             return "\nEsta enquete já foi finalizada"
 
+        # Verificando se o usuário solicitante já votou nesta enquete
         if objeto_enquete.checar_se_usuario_votou(nome):
             return "\nEste usuário já votou nesta enquete"
 
+        # Verificando se a opção de voto é válida
         if voto != '1' and voto != '2':
             return "\nOpção inválida"
 
+        # Registrando o voto
         objeto_enquete.votar(nome, voto)
-        GerenciadorDeEnquetes.tente_finalizar_enquete(objeto_enquete, self.usuarios_cadastrados)
+
+        # Adicionando o votante à lista de subscribers dessa enquete
+        votante = self.selecionar_objeto_usuario(nome)
+        gerenciador_de_mensagens = self.selecionar_gerenciador_de_mensagens(objeto_enquete)
+        gerenciador_de_mensagens.adicionar_subscriber_votante(votante)
+
+        # Verificando se já é possível finalizar a enquete por votos
+        GerenciadorDeEnquetes.tente_finalizar_enquete(objeto_enquete, self.usuarios_cadastrados, gerenciador_de_mensagens)
 
         return "\nVoto registrado"
 
@@ -108,23 +155,26 @@ class Servidor(object):
         objeto_enquete = self.selecionar_objeto_enquete(titulo)
         objeto_usuario = self.selecionar_objeto_usuario(nome)
 
+        # Verificando se a enquete existe
         if objeto_enquete is None:
             return "\nEnquete não encontrada"
 
-        if not objeto_enquete.checar_status_enquete():
-            return "\nEsta enquete já foi finalizada"
-
+        # Verificando se o usuário participa da enquete como votante
         if not objeto_enquete.checar_se_usuario_votou(nome):
             return "\nPermissão negada"
 
+        # Verificando assinatura digital
         if not AssinaturaDigital.verificar_assinatura(mensagem, assinatura_digital, objeto_usuario):
             return "\"nPermissão negada"
 
+        # Disponibilizando o informativo sobre andamento da enquete
         resultado_consulta_enquete = objeto_enquete.consultar_andamento_enquete()
         return resultado_consulta_enquete
 
-    def iniciar_thread_acompanhamento_validade_enquete(self, objeto_enquete):
-        nova_thread_acompanhamento_validade = SupervisorEnquetePorTempo(objeto_enquete, self.usuarios_cadastrados)
+    @staticmethod
+    def iniciar_thread_acompanhamento_validade_enquete(objeto_enquete, gerenciador_de_mensagens):
+        # Criando a thread que acompanha se uma enquete deve ser finalizada por limite de data atingido
+        nova_thread_acompanhamento_validade = SupervisorEnquetePorTempo(objeto_enquete, gerenciador_de_mensagens)
 
         thread_multicast = t.Thread(target=nova_thread_acompanhamento_validade.acompanhar_fechamento_enquete, args=())
         thread_multicast.daemon = True

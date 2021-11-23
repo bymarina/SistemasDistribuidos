@@ -10,5 +10,6 @@ class ClienteCallback(object):
         daemon.requestLoop()
 
     @staticmethod
+    # Exibir notificações recebidas do servidor
     def mostrar_notificacoes(notificacao):
         print(notificacao)

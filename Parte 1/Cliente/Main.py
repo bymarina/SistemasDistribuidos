@@ -31,13 +31,13 @@ def main():
     thread_cliente.start()
 
     # Cadastrar cliente no servidor
-    print("Cadastro de novo usuário: ")
+    print("\nCadastro de novo usuário: ")
     nome = input("Digite seu nome: ").strip()
     servidor.cadastrar_usuario(uri_cliente, nome, chave_publica)
 
     while True:
         # Mostrar o menu
-        Menu.mostrar_menu(servidor, assinatura_digital)
+        Menu.mostrar_menu(servidor, assinatura_digital, nome)
 
 
 if __name__ == "__main__":

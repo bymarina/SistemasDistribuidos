@@ -1,26 +1,22 @@
-from Notificar import Notificar
-
-
 class GerenciadorDeEnquetes:
     @staticmethod
-    def tente_finalizar_enquete(objeto_enquete, lista_usuarios_cadastro):
+    def tente_finalizar_enquete(objeto_enquete, lista_usuarios_cadastro, gerenciador_de_mensagens):
+        # Realiza uma tentativa de finalizar a enquete
+
+        # Verificando se a enquete existe
         if not objeto_enquete:
             print("Enquete não localizada")
             return
 
+        # Verificando se todos os usuário votaram
         if GerenciadorDeEnquetes.verificar_se_todos_os_usuarios_votaram(objeto_enquete, lista_usuarios_cadastro):
-            GerenciadorDeEnquetes.finalizar_enquete(objeto_enquete, lista_usuarios_cadastro)
+            # Solicitando fechamento da enquete por votos
+            GerenciadorDeEnquetes.finalizar_enquete(objeto_enquete, gerenciador_de_mensagens)
             return
 
     @staticmethod
-    def finalizar_enquete(objeto_enquete, lista_usuarios_cadastro):
-        objeto_enquete.finalizar_enquete()
-        lista_clientes_a_serem_notificados = GerenciadorDeEnquetes.pegar_referencia_votantes(lista_usuarios_cadastro, objeto_enquete.retornar_todos_os_votantes())
-        notificacao = ("\nA seguinte enquete foi finalizada: " + objeto_enquete.titulo + "\n" + objeto_enquete.consultar_resultado())
-        Notificar.notificar_clientes(notificacao, lista_clientes_a_serem_notificados)
-
-    @staticmethod
     def verificar_se_todos_os_usuarios_votaram(objeto_enquete, lista_usuarios_cadastro):
+        # Verificando se todos os usuários cadastrados no servidor votaram na enquete
         for pessoa in lista_usuarios_cadastro:
             if not GerenciadorDeEnquetes.checar_se_um_usuario_votou(objeto_enquete, pessoa):
                 return False
@@ -28,16 +24,18 @@ class GerenciadorDeEnquetes:
 
     @staticmethod
     def checar_se_um_usuario_votou(enquete, pessoa):
+        # Verificando se um usuário específico já votou na enquete
         usuario_votou = enquete.checar_se_usuario_votou(pessoa.nome)
         if not usuario_votou:
             return False
         return True
 
     @staticmethod
-    def pegar_referencia_votantes(lista_usuarios_cadastro, lista_votantes):
-        lista_notificar_final_enquete = []
-        for votante in lista_votantes:
-            for usuario in lista_usuarios_cadastro:
-                if usuario.nome == votante:
-                    lista_notificar_final_enquete.append(usuario)
-        return lista_notificar_final_enquete
+    def finalizar_enquete(objeto_enquete, gerenciador_de_mensagens):
+        # Solicitando encerramento da enquete
+        objeto_enquete.finalizar_enquete()
+        # Solicitando notificações de encerramento de enquete
+        gerenciador_de_mensagens.notificar_criador_enquete_finalizada()
+        gerenciador_de_mensagens.notificar_votantes_enquete_finalizada()
+
+
