@@ -1,9 +1,10 @@
 from datetime import date
 from datetime import timedelta
+from Usuario import Usuario
 
 
 class Enquete:
-    def __init__(self, nome, titulo, local, data1, horario1, data2, horario2, limite, uri_cliente):
+    def __init__(self, nome, titulo, local, data1, horario1, data2, horario2, limite):
         self.nome = nome
         self.titulo = titulo
         self.local = local
@@ -12,7 +13,6 @@ class Enquete:
         self.data2 = data2
         self.horario2 = horario2
         self.limite = limite
-        self.uri_cliente = uri_cliente
         self.enqueteAtiva = True
         self.votosOpcao1 = []
         self.votosOpcao2 = []
@@ -26,6 +26,13 @@ class Enquete:
             if nome_votante == nome:
                 return True
         return False
+
+    def retornar_todos_os_votantes(self):
+        votantes = self.votosOpcao1 + self.votosOpcao2
+        return votantes
+
+    def informar_dados_para_votar(self):
+        return "\nVotação: \nEnquete: " + self.titulo + "\nLocal: " + self.local + "\nData 1: " + self.data1 + ", Horário: " + self.horario1 + "\nData 2: " + self.data2 + ", Horário: " + self.horario2
 
     def votar(self, nome, voto):
         if voto == '1':
@@ -72,7 +79,6 @@ class Enquete:
 
     def finalizar_enquete(self):
         self.enqueteAtiva = False
-        print("Enquete finalizada: " + self.titulo)
 
     def pegar_dados_enquete(self):
         return self

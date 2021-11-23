@@ -1,4 +1,3 @@
-from Multicast import multicast
 import Pyro4
 from Servidor import Servidor
 
@@ -12,7 +11,6 @@ def main():
     ns = Pyro4.locateNS()
     ns.register('AplicaçãoDoServidor', uri)
     print("Servidor disponível!")
-    multicasting = multicast()
 
     # Inicia o loop aguardando clientes
     daemon.requestLoop()
