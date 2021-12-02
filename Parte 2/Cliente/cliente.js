@@ -1,47 +1,39 @@
 const axios = require('axios').default;
+const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
 
-menu()
+// Cadastrar o usuário inicialmente
+cadastrarUsuario()
 
-function menu(){
-    // Cadastrar o usuário inicialmente
-    cadastrarUsuario()
+function menu(){    
+    // Display do menu
+    console.log("\nBem-vindo(a) ao servico de enquetes!")
+    console.log("As seguintes opções estão disponiveis: ")
+    console.log("1: Cadastrar nova enquete")
+    console.log("2: Consultar o status de uma enquete")
+    console.log("3: Votar em uma enquete")
 
-    while(true){
-        // Display do menu
-        console.log("\nBem-vindo(a) ao servico de enquetes!")
-        console.log("As seguintes opções estão disponiveis: ")
-        console.log("1: Cadastrar nova enquete")
-        console.log("2: Consultar o status de uma enquete")
-        console.log("3: Votar em uma enquete")
+    // Lendo a opção desejada
+    const readline = require('readline-sync');
+    let opcao = readline.question("Selecionar: ");
 
-        // Lendo a opção desejada
-        const readline = require('readline-sync');
-        let opcao = readline.question("Selecionar: ");
-
-        // Switch case do menu
-        switch(opcao) {
-            case "1":
-              cadastrarEnquete()
-              break;
-
-            case "2":
-              consultarEnquete()
-              break;
-
-            case "3":
-                votarEnquete()
-                break;
-
-            default:
-              console.log("Opcao invalida!")
-              menu()
-          }
-    }
-
-     
+    // Switch case do menu
+    switch(opcao) {
+        case "1":
+            cadastrarEnquete()
+            break;
+        case "2":
+            consultarEnquete()
+            break;
+        case "3":
+            votarEnquete()
+            break;
+        default:
+            console.log("Opcao invalida!")
+            menu()
+    }     
 }
 
-function cadastrarUsuario() {
+async function cadastrarUsuario() {
     const readline = require('readline-sync');
     let nome_usuario = readline.question("\nDigite seu nome: ");
 
@@ -53,9 +45,12 @@ function cadastrarUsuario() {
         .catch(function (error) {
             console.log(error);
         });
+        await sleep(1000);
+    
+    menu()
 }
 
-function cadastrarEnquete() {
+async function cadastrarEnquete() {
     const readline = require('readline-sync');
     let nome_usuario = readline.question("\nDigite seu nome: ");
     let titulo_enquete = readline.question("Titulo da enquete: ");
@@ -83,9 +78,12 @@ function cadastrarEnquete() {
         .catch(function (error) {
             console.log(error);
         });
+        await sleep(1000);
+    
+    menu()
 }
 
-function consultarEnquete() {
+async function consultarEnquete() {
     const readline = require('readline-sync');
     let nome_usuario = readline.question("\nDigite seu nome: ");
     let titulo_enquete = readline.question("Titulo da enquete: ");
@@ -101,9 +99,12 @@ function consultarEnquete() {
         .catch(function (error) {
             console.log(error);
         });
+        await sleep(1000);
+
+    menu()
 }
 
-function votarEnquete() {
+async function votarEnquete() {
     const readline = require('readline-sync');
     let nome_usuario = readline.question("\nDigite seu nome: ");
     let titulo_enquete = readline.question("Titulo da enquete: ");
@@ -121,5 +122,8 @@ function votarEnquete() {
         .catch(function (error) {
             console.log(error);
         });
+        await sleep(1000);
+
+    menu()
 }
 

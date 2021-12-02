@@ -16,8 +16,6 @@ def hello_world():
 def cadastro():
     corpo = request.get_json()
     nome = corpo['nome']
-    print(nome)
-    print(type(nome))
     retorno_servidor = servidor.cadastrar_usuario(nome)
     resposta = {"status": 200,
                 "message": retorno_servidor}
