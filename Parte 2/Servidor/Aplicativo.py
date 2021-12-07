@@ -1,18 +1,24 @@
 from flask import Flask, request
-import json
+from flask_sse import sse
+from flask_cors import CORS, cross_origin
 from Servidor import Servidor
+import json
+
+# waitress-serve --port=5000 Aplicativo:app
 
 app = Flask(__name__)
+app.config["REDIS_URL"] = "redis://localhost"
+app.register_blueprint(sse, url_prefix='/stream')
+app.app_context().push()
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 
 servidor = Servidor()
 
 
-@app.route('/')  # Configurando para a rota: http://localhost:5000/ que é a default
-def hello_world():
-    return 'Hello World'
-
-
 @app.route('/cadastro', methods=['POST'])
+@cross_origin()
 def cadastro():
     corpo = request.get_json()
     nome = corpo['nome']
@@ -60,4 +66,3 @@ def votar_enquete():
     resposta = {"status": 200,
                 "message": retorno_servidor}
     return json.dumps(resposta)
-

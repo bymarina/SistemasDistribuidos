@@ -1,10 +1,8 @@
-# import Pyro4
+from flask_sse import sse
 
 
 class Notificar:
     @staticmethod
-    def notificar_clientes(mensagem, lista_cadastro):
-        # Enviando mensagem para usuários na lista recebida
-        for cliente in lista_cadastro:
-            print("Notificar")
-            print(mensagem)
+    def notificar_clientes(mensagem, lista_usuarios):
+        for usuario in lista_usuarios:
+            sse.publish({"message": mensagem, "data": None}, type=usuario.nome)

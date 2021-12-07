@@ -1,10 +1,11 @@
+const readline = require("readline-sync");
 const axios = require('axios').default;
 const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
-
 // Cadastrar o usuário inicialmente
 cadastrarUsuario()
 
-function menu(){    
+async function menu() {
+    await(2000)
     // Display do menu
     console.log("\nBem-vindo(a) ao servico de enquetes!")
     console.log("As seguintes opções estão disponiveis: ")
@@ -14,10 +15,10 @@ function menu(){
 
     // Lendo a opção desejada
     const readline = require('readline-sync');
-    let opcao = readline.question("Selecionar: ");
+    let selecao_menu = readline.question("Selecionar: ");
 
     // Switch case do menu
-    switch(opcao) {
+    switch (selecao_menu) {
         case "1":
             cadastrarEnquete()
             break;
@@ -29,8 +30,16 @@ function menu(){
             break;
         default:
             console.log("Opcao invalida!")
+            atualizar_novidades()
             menu()
-    }     
+    }
+}
+async function atualizar_novidades(){
+    axios.get('http://127.0.0.1:5000/stream')
+        .then(function (response){
+            let dados = response['data'];
+            console.log(dados['message']);
+        });
 }
 
 async function cadastrarUsuario() {
@@ -39,16 +48,31 @@ async function cadastrarUsuario() {
 
     axios.post('http://127.0.0.1:5000/cadastro', {nome: nome_usuario})
         .then(function (response) {
-            dados = response['data'];
+            let dados = response['data'];
             console.log(dados['message']);
         })
         .catch(function (error) {
             console.log(error);
         });
         await sleep(1000);
-    
-    menu()
+        await ouvirServidor(nome_usuario)
 }
+
+function ouvirServidor(nome_usuario){
+    const EventSource = require('eventsource');
+    const fonte = new EventSource('http://127.0.0.1:5000/stream');
+    fonte.addEventListener(nome_usuario, function (event) {
+        let dados = event.data
+        let dados_json = JSON.parse(dados)
+        console.log("\nNova mensagem do servidor:" + dados_json['message'])
+    });
+
+    fonte.addEventListener('error', function(event) {
+        console.log("Error"+ event)
+    });
+
+    menu()
+ }
 
 async function cadastrarEnquete() {
     const readline = require('readline-sync');
@@ -72,7 +96,7 @@ async function cadastrarEnquete() {
         limite: limite_enquete
         })
         .then(function (response) {
-            dados = response['data'];
+            let dados = response['data'];
             console.log(dados['message']);
         })
         .catch(function (error) {
@@ -93,7 +117,7 @@ async function consultarEnquete() {
         titulo: titulo_enquete
         })
         .then(function (response) {
-            dados = response['data'];
+            let dados = response['data'];
             console.log(dados['message']);
         })
         .catch(function (error) {
@@ -116,7 +140,7 @@ async function votarEnquete() {
         voto: voto_enquete
         })
         .then(function (response) {
-            dados = response['data'];
+            let dados = response['data'];
             console.log(dados['message']);
         })
         .catch(function (error) {
